@@ -68,6 +68,17 @@ namespace MovieReviewApp.Repositories
             return Save();
         }
 
+        public async Task<bool> DeleteDirector(Director director)
+        {
+            var directorMovies = await _context.Movies.Where(m => m.DirectorId == director.Id).ToListAsync();
+            foreach(var movie in directorMovies)
+            {
+                movie.DirectorId = 10;
+                movie.Director = await GetDirectorById(10)!;
+            }
+            _context.Remove(director);
+            return Save();
+        }
         public bool Save()
         {
             var saved = _context.SaveChanges();

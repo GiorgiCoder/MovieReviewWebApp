@@ -1,4 +1,5 @@
 ﻿using MovieReviewApp.Models;
+using System.IO;
 
 namespace MovieReviewApp.Interfaces
 {
@@ -13,6 +14,7 @@ namespace MovieReviewApp.Interfaces
         public bool DirectorExists(int directorId);
         public bool CreateDirector(Director director);
         public bool UpdateDirector(Director director);
+        public Task<bool> DeleteDirector(Director director);
         public bool Save();
     }
 }

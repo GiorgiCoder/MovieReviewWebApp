@@ -125,5 +125,34 @@ namespace MovieReviewApp.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{directorId}/delete")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> DeleteMovie(int directorId) // when deleting director, movies of this director
+                                                                     // go to dummy director (with Id = 10) (see in repository)
+        {
+            if (!_directorRepository.DirectorExists(directorId))
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var director = await _directorRepository.GetDirectorById(directorId);
+            var deleted = await _directorRepository.DeleteDirector(director!);
+
+            if (!deleted)
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting the movie");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MovieReviewApp.Dto;
 using MovieReviewApp.Interfaces;
 using MovieReviewApp.Models;
+using MovieReviewApp.Repositories;
 
 namespace MovieReviewApp.Controllers
 {
@@ -126,6 +127,34 @@ namespace MovieReviewApp.Controllers
             if (!updated)
             {
                 ModelState.AddModelError("", "Something went wrong while updating the actor");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{actorId}/delete")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> DeleteMovie(int actorId)
+        {
+            if (!_actorRepository.ActorExists(actorId))
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var actor = await _actorRepository.GetActorById(actorId);
+            var deleted = await _actorRepository.DeleteActor(actor!);
+
+            if (!deleted)
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting the movie");
                 return StatusCode(500, ModelState);
             }
 

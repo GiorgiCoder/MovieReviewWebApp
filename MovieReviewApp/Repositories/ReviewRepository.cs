@@ -14,6 +14,18 @@ namespace MovieReviewApp.Repositories
             _context = context;
         }
 
+        public async Task<IEnumerable<Review>> GetMovieReviews(int movieId)
+        {
+            var reviews = await _context.Reviews.Where(r => r.MovieId == movieId).ToListAsync();
+            return reviews;
+        }
+
+        public async Task<Review?> GetReviewOfUser(int movieId, int userId)
+        {
+            var review = await _context.Reviews.FirstOrDefaultAsync(r => r.MovieId == movieId && r.UserId == userId);
+            return review;
+        }
+
         public async Task<bool> AddReview(int movieId, int userId, Review review)
         {
             var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == movieId);
@@ -44,6 +56,11 @@ namespace MovieReviewApp.Repositories
             return Save();
         }
 
+        public bool DeleteReview(Review review)
+        {
+            _context.Remove(review);
+            return Save();
+        }
         public bool Save()
         {
             var saved = _context.SaveChanges();

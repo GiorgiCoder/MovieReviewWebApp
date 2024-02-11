@@ -38,23 +38,12 @@ namespace MovieReviewApp.Repositories
             return movies;
         }
 
-        public async Task<IEnumerable<Review>> GetMovieReviews(int movieId)
-        {
-            var reviews = await _context.Reviews.Where(r => r.MovieId == movieId).ToListAsync();
-            return reviews;
-        }
-
-        public async Task<Review?> GetReviewOfUser(int movieId, int userId)
-        {
-            var review = await _context.Reviews.FirstOrDefaultAsync(r => r.MovieId == movieId && r.UserId == userId);
-            return review;
-        }
-
+        
         public async Task<double> GetMovieRating(int movieId)
         {
-            var ratings = await _context.Reviews.Where(r => r.MovieId ==  movieId).Select(r => r.Rating).ToListAsync();
+            var ratings = await _context.Reviews.Where(r => r.MovieId == movieId).Select(r => r.Rating).ToListAsync();
             if (!ratings.Any()) { return 0; }
-            var averageRating = ((double) ratings.Sum()) / ratings.Count;
+            var averageRating = ((double)ratings.Sum()) / ratings.Count;
             return averageRating;
         }
 
@@ -80,8 +69,23 @@ namespace MovieReviewApp.Repositories
             return Save();
         }
 
-        public bool DeleteMovie(Movie movie)
+        public async Task<bool> DeleteMovie(Movie movie)
         {
+            var casts = await _context.ActorMovies.Where(x => x.MovieId == movie.Id).ToListAsync();
+            foreach (var cast in casts)
+            {
+                _context.Remove(cast);
+            }
+            var movieGenres = await _context.MovieGenres.Where(x => x.MovieId == movie.Id).ToListAsync();
+            foreach (var movieGenre in movieGenres)
+            {
+                _context.Remove(movieGenre);
+            }
+            var movieReviews = await _context.Reviews.Where(x => x.MovieId == movie.Id).ToListAsync(); // this should work without it but still
+            foreach (var movieReview in movieReviews)
+            {
+                _context.Remove(movieReview);
+            }
             _context.Remove(movie);
             return Save();
         }

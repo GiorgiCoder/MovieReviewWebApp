@@ -60,7 +60,7 @@ namespace MovieReviewApp.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<ReviewDto>))]
         public async Task<IActionResult> GetReviews(int movieId)
         {
-            var reviews = await _movieRepository.GetMovieReviews(movieId);
+            var reviews = await _reviewRepository.GetMovieReviews(movieId);
             var reviewsDto = _mapper.Map<List<ReviewDto>>(reviews);
             if (!ModelState.IsValid)
             {
@@ -73,7 +73,7 @@ namespace MovieReviewApp.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<ReviewDto>))]
         public async Task<IActionResult> GetReviewOfUser(int movieId, int userId)
         {
-            var review = await _movieRepository.GetReviewOfUser(movieId, userId);
+            var review = await _reviewRepository.GetReviewOfUser(movieId, userId);
             var reviewDto = _mapper.Map<ReviewDto>(review);
 
             if (!ModelState.IsValid)
@@ -154,6 +154,35 @@ namespace MovieReviewApp.Controllers
         }
 
 
+        [HttpDelete("{movieId}/delete")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> DeleteMovie(int movieId)
+        {
+            if (!_movieRepository.MovieExists(movieId))
+            {
+                return NotFound();
+            }
+            
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var movie = await _movieRepository.GetMovieById(movieId);
+            var deleted = await _movieRepository.DeleteMovie(movie!);
+
+            if (!deleted)
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting the movie");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+
         [HttpPost("{movieId}/reviews/add")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -168,7 +197,7 @@ namespace MovieReviewApp.Controllers
                 ModelState.AddModelError("", "Review already exists");
                 return StatusCode(422, ModelState);
             }
-
+            // need to add checking if movie and user exist
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -207,7 +236,7 @@ namespace MovieReviewApp.Controllers
             var review = _mapper.Map<Review>(reviewDto);
             var updated = _reviewRepository.UpdateReview(review);
 
-            if(!updated)
+            if (!updated)
             {
                 ModelState.AddModelError("", "Something went wrong while updating review");
                 return StatusCode(500, ModelState);
@@ -216,24 +245,24 @@ namespace MovieReviewApp.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{movieId}/delete")]
+        [HttpDelete("{movieId}/reviews/{userId}/delete")] // I should've created ReviewController...
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> DeleteMovie(int movieId)
+        public async Task<IActionResult> DeleteReview(int movieId, int userId)
         {
-            if (!_movieRepository.MovieExists(movieId))
+            if (!_reviewRepository.ReviewExists(movieId, userId))
             {
                 return NotFound();
             }
-            
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var movie = await _movieRepository.GetMovieById(movieId);
-            var deleted = _movieRepository.DeleteMovie(movie!);
+            var review = await _reviewRepository.GetReviewOfUser(movieId, userId);
+            var deleted = _reviewRepository.DeleteReview(review!);
 
             if (!deleted)
             {
@@ -242,7 +271,6 @@ namespace MovieReviewApp.Controllers
             }
 
             return NoContent();
-
         }
     }
 }

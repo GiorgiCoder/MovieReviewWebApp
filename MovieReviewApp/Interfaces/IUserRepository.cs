@@ -12,6 +12,7 @@ namespace MovieReviewApp.Interfaces
         public bool UserExists(int userId);
         public bool CreateUser(User user);
         public bool UpdateUser(User user);
+        public Task<bool> DeleteUser(User user);
         public bool Save();
     }
 }

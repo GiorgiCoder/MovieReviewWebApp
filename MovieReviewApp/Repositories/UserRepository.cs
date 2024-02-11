@@ -62,6 +62,17 @@ namespace MovieReviewApp.Repositories
             _context.Update(user);
             return Save();
         }
+
+        public async Task<bool> DeleteUser(User user)
+        {
+            var reviewsOfUser = await _context.Reviews.Where(r => r.UserId == user.Id).ToListAsync();
+            foreach(var review in reviewsOfUser)
+            {
+                _context.Remove(review);
+            }
+            _context.Remove(user);
+            return Save();
+        }
         public bool Save()
         {
             var saved = _context.SaveChanges();

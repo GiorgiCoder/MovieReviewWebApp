@@ -14,6 +14,7 @@ namespace MovieReviewApp.Interfaces
         public bool ActorExists(int actorId);
         public bool CreateActor(Actor actor);
         public bool UpdateActor(Actor actor);
+        public Task<bool> DeleteActor(Actor actor);
         public bool Save();
     }
 }

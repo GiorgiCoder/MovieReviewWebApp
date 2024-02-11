@@ -67,6 +67,17 @@ namespace MovieReviewApp.Repositories
             _context.Update(actor);
             return Save();
         }
+
+        public async Task<bool> DeleteActor(Actor actor)
+        {
+            var casts = await _context.ActorMovies.Where(am => am.ActorId == actor.Id).ToListAsync();
+            foreach(var cast in casts)
+            {
+                _context.Remove(cast);
+            }
+            _context.Remove(actor);
+            return Save();
+        }
         public bool Save()
         {
             var saved = _context.SaveChanges();

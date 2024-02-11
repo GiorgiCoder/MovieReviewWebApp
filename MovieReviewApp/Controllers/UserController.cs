@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MovieReviewApp.Dto;
 using MovieReviewApp.Interfaces;
 using MovieReviewApp.Models;
+using MovieReviewApp.Repositories;
 
 namespace MovieReviewApp.Controllers
 {
@@ -131,5 +132,33 @@ namespace MovieReviewApp.Controllers
             return NoContent();
         }
 
+        [HttpDelete("{userId}/delete")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> DeleteMovie(int userId) // when deleting user, all his reviews should
+                                                                 // get deleted too (implemented in repository)
+        {
+            if (!_userRepository.UserExists(userId))
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userRepository.GetUserById(userId);
+            var deleted = await _userRepository.DeleteUser(user!);
+
+            if (!deleted)
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting the movie");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }
